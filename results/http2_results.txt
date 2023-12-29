@@ -1,0 +1,59 @@
+DNS: www.google.com
+HTTP/2 200 
+content-type: text/html; charset=ISO-8859-1
+content-security-policy-report-only: object-src 'none';base-uri 'self';script-src 'nonce-PI__JAMjTDsLxa8PYTC8Zw' 'strict-dynamic' 'report-sample' 'unsafe-eval' 'unsafe-inline' https: http:;report-uri https://csp.withgoogle.com/csp/gws/other-hp
+p3p: CP="This is not a P3P policy! See g.co/p3phelp for more info."
+date: Fri, 29 Dec 2023 17:40:01 GMT
+server: gws
+x-xss-protection: 0
+x-frame-options: SAMEORIGIN
+expires: Fri, 29 Dec 2023 17:40:01 GMT
+cache-control: private
+set-cookie: 1P_JAR=2023-12-29-17; expires=Sun, 28-Jan-2024 17:40:01 GMT; path=/; domain=.google.com; Secure
+set-cookie: AEC=Ackid1RwiqMnW-z03ykoAzR7kaYLN6LGOWbNEXOo74ytzP97k_6xM50Xhw; expires=Wed, 26-Jun-2024 17:40:01 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
+set-cookie: NID=511=M3tmay4xFJXGjpuzuVseOnnm134vezKgHrHeuOcfFT5Z9PKw9yaqjCUySGQGgw-hlkh3t6GBgJDEsZpXUd_b1WQews0T1XFkHDmtNDFQhPf5op6Lx4nVBJsGUhXMgLaBhrw2TO9RYjijWcOgRnGt-MmDHLwv2hrdZ24dos0f-r8; expires=Sat, 29-Jun-2024 17:40:01 GMT; path=/; domain=.google.com; HttpOnly
+alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+
+
+
+DNS: www.instagram.com
+HTTP/2 200 
+vary: Accept-Encoding
+set-cookie: csrftoken=ggau_C7H7S3ipScIH2Jdnw; expires=Fri, 27-Dec-2024 17:40:01 GMT; Max-Age=31449600; path=/; domain=.instagram.com; secure
+accept-ch-lifetime: 4838400
+accept-ch: viewport-width,dpr,Sec-CH-Prefers-Color-Scheme,Sec-CH-UA-Full-Version-List,Sec-CH-UA-Platform-Version,Sec-CH-UA-Model
+reporting-endpoints: default="https://www.instagram.com/error/ig_web_error_reports/?device_level=unknown"
+report-to: {"max_age":259200,"endpoints":[{"url":"https:\/\/www.instagram.com\/error\/ig_web_error_reports\/?device_level=unknown"}]}
+content-security-policy-report-only: default-src *.facebook.com *.fbcdn.net *.instagram.com data: blob:;script-src *.facebook.com *.fbcdn.net *.facebook.net 'unsafe-inline' 'unsafe-eval' blob: data: 'self' *.teststagram.com *.instagram.com static.cdninstagram.com *.google-analytics.com *.google.com;style-src data: blob: 'unsafe-inline' *.fbcdn.net *.facebook.com *.instagram.com *.teststagram.com static.cdninstagram.com;connect-src *.facebook.com facebook.com *.fbcdn.net *.facebook.net wss://*.facebook.com:* ws://localhost:* blob: *.instagram.com *.cdninstagram.com wss://*.instagram.com:* 'self' *.teststagram.com wss://edge-chat.instagram.com connect.facebook.net;font-src *.facebook.com data: fonts.gstatic.com *.fbcdn.net *.instagram.com *.teststagram.com static.cdninstagram.com *.intern.facebook.com;img-src *.instagram.com *.facebook.com *.fbcdn.net data: blob: *.cdninstagram.com *.fbsbx.com android-webview-video-poster: *.giphy.com *.teststagram.com *.igsonar.com *.google-analytics.com;media-src *.facebook.com *.fbcdn.net *.instagram.com *.cdninstagram.com cdn.fbsbx.com data: blob:;frame-src *.instagram.com *.facebook.com *.fbsbx.com fbsbx.com data:;worker-src *.instagram.com/static_resources/webworker_v1/init_script/ *.instagram.com/static_resources/webworker/init_script/ *.instagram.com/static_resources/sharedworker/init_script/ *.instagram.com/www-service-worker.js;block-all-mixed-content;report-uri https://www.facebook.com/csp/reporting/?minimize=0;
+content-security-policy: default-src *.facebook.com *.fbcdn.net *.instagram.com data: blob:;script-src *.facebook.com *.fbcdn.net *.facebook.net 127.0.0.1:* 'unsafe-inline' 'unsafe-eval' blob: data: 'self' *.teststagram.com *.instagram.com static.cdninstagram.com *.google-analytics.com *.google.com;style-src data: blob: 'unsafe-inline' *.fbcdn.net *.facebook.com *.instagram.com *.teststagram.com static.cdninstagram.com;connect-src *.facebook.com facebook.com *.fbcdn.net *.facebook.net wss://*.facebook.com:* ws://localhost:* blob: *.instagram.com *.cdninstagram.com wss://*.instagram.com:* 'self' *.teststagram.com wss://edge-chat.instagram.com connect.facebook.net;font-src *.facebook.com data: fonts.gstatic.com *.fbcdn.net *.instagram.com *.teststagram.com static.cdninstagram.com *.intern.facebook.com;img-src *.instagram.com *.facebook.com *.fbcdn.net data: blob: *.cdninstagram.com www.gstatic.com *.fbsbx.com android-webview-video-poster: *.giphy.com *.oculuscdn.com www.googleadservices.com *.doubleclick.net *.google.com *.google.co.uk *.teststagram.com *.igsonar.com *.google-analytics.com *.whatsapp.net;media-src *.facebook.com *.fbcdn.net *.instagram.com *.cdninstagram.com *.giphy.com cdn.fbsbx.com data: blob:;frame-src *.instagram.com *.facebook.com *.fbsbx.com fbsbx.com data: www.googleadservices.com *.doubleclick.net *.google.com *.google.co.uk;block-all-mixed-content;upgrade-insecure-requests;
+document-policy: force-load-at-top
+permissions-policy-report-only: autoplay=(), clipboard-read=(), clipboard-write=(), encrypted-media=(), gamepad=(), keyboard-map=(), xr-spatial-tracking=()
+permissions-policy: accelerometer=(self), ambient-light-sensor=(), bluetooth=(), camera=(self), display-capture=(), fullscreen=(self), gamepad=(), geolocation=(self), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(self), midi=(), otp-credentials=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), window-management=()
+cross-origin-opener-policy: same-origin-allow-popups
+pragma: no-cache
+cache-control: private, no-cache, no-store, must-revalidate
+expires: Sat, 01 Jan 2000 00:00:00 GMT
+x-content-type-options: nosniff
+x-xss-protection: 0
+x-frame-options: DENY
+strict-transport-security: max-age=15552000
+content-type: text/html; charset="utf-8"
+x-fb-debug: LTYQ969QYIhoIYm0YIYun+WF6zV6j1ECqf0IMdeigdPI0EvOn4KU6GHScYTwmE7pFp+1cjbVYMh1lRL7fa+CQA==
+date: Fri, 29 Dec 2023 17:40:01 GMT
+alt-svc: h3=":443"; ma=86400
+
+
+
+DNS: www.twitter.com
+HTTP/2 301 
+perf: 7469935968
+location: https://twitter.com/
+cache-control: no-cache, no-store, max-age=0
+content-length: 0
+x-transaction-id: 638142c6f979c9e0
+x-response-time: 117
+x-connection-hash: ae18fc041d14d8f30bba3a9c14f36f76ccb71ccfbbedad0e3c2135ed1a29c556
+date: Fri, 29 Dec 2023 17:40:01 GMT
+server: tsa_d
+
+
