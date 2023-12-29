@@ -1,17 +1,17 @@
 DNS: www.google.com
 HTTP/2 200 
 content-type: text/html; charset=ISO-8859-1
-content-security-policy-report-only: object-src 'none';base-uri 'self';script-src 'nonce-PI__JAMjTDsLxa8PYTC8Zw' 'strict-dynamic' 'report-sample' 'unsafe-eval' 'unsafe-inline' https: http:;report-uri https://csp.withgoogle.com/csp/gws/other-hp
+content-security-policy-report-only: object-src 'none';base-uri 'self';script-src 'nonce-04Kt_xOeGaW6ZxbS1q8mig' 'strict-dynamic' 'report-sample' 'unsafe-eval' 'unsafe-inline' https: http:;report-uri https://csp.withgoogle.com/csp/gws/other-hp
 p3p: CP="This is not a P3P policy! See g.co/p3phelp for more info."
-date: Fri, 29 Dec 2023 17:40:01 GMT
+date: Fri, 29 Dec 2023 17:59:43 GMT
 server: gws
 x-xss-protection: 0
 x-frame-options: SAMEORIGIN
-expires: Fri, 29 Dec 2023 17:40:01 GMT
+expires: Fri, 29 Dec 2023 17:59:43 GMT
 cache-control: private
-set-cookie: 1P_JAR=2023-12-29-17; expires=Sun, 28-Jan-2024 17:40:01 GMT; path=/; domain=.google.com; Secure
-set-cookie: AEC=Ackid1RwiqMnW-z03ykoAzR7kaYLN6LGOWbNEXOo74ytzP97k_6xM50Xhw; expires=Wed, 26-Jun-2024 17:40:01 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
-set-cookie: NID=511=M3tmay4xFJXGjpuzuVseOnnm134vezKgHrHeuOcfFT5Z9PKw9yaqjCUySGQGgw-hlkh3t6GBgJDEsZpXUd_b1WQews0T1XFkHDmtNDFQhPf5op6Lx4nVBJsGUhXMgLaBhrw2TO9RYjijWcOgRnGt-MmDHLwv2hrdZ24dos0f-r8; expires=Sat, 29-Jun-2024 17:40:01 GMT; path=/; domain=.google.com; HttpOnly
+set-cookie: 1P_JAR=2023-12-29-17; expires=Sun, 28-Jan-2024 17:59:43 GMT; path=/; domain=.google.com; Secure
+set-cookie: AEC=Ackid1QPsx9kdprokyYuYE2kg3oJ64AmsEeuF3C_EBOJJ-xrLVoplCxPtA; expires=Wed, 26-Jun-2024 17:59:43 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
+set-cookie: NID=511=Rfd5-wsmjUf9um9J6dcdmPiDfH7jlCd7vkXqQuYHN5k9NRXo-_JaAO0XlljneU3_H9Sx4qOPJvvmj9EJv332R3vm_9Q_nnbkHM8RF_QSzGrC7eHxj-rklFb6Ev0Zy5Uw0Zap2XvOncaFYmDb703rIXn7l-1qVdy2SOFdyfBDDjw; expires=Sat, 29-Jun-2024 17:59:43 GMT; path=/; domain=.google.com; HttpOnly
 alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
 
 
@@ -19,7 +19,7 @@ alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
 DNS: www.instagram.com
 HTTP/2 200 
 vary: Accept-Encoding
-set-cookie: csrftoken=ggau_C7H7S3ipScIH2Jdnw; expires=Fri, 27-Dec-2024 17:40:01 GMT; Max-Age=31449600; path=/; domain=.instagram.com; secure
+set-cookie: csrftoken=oJHlIFOXLt1UMKU9muH4RV; expires=Fri, 27-Dec-2024 17:59:43 GMT; Max-Age=31449600; path=/; domain=.instagram.com; secure
 accept-ch-lifetime: 4838400
 accept-ch: viewport-width,dpr,Sec-CH-Prefers-Color-Scheme,Sec-CH-UA-Full-Version-List,Sec-CH-UA-Platform-Version,Sec-CH-UA-Model
 reporting-endpoints: default="https://www.instagram.com/error/ig_web_error_reports/?device_level=unknown"
@@ -38,8 +38,8 @@ x-xss-protection: 0
 x-frame-options: DENY
 strict-transport-security: max-age=15552000
 content-type: text/html; charset="utf-8"
-x-fb-debug: LTYQ969QYIhoIYm0YIYun+WF6zV6j1ECqf0IMdeigdPI0EvOn4KU6GHScYTwmE7pFp+1cjbVYMh1lRL7fa+CQA==
-date: Fri, 29 Dec 2023 17:40:01 GMT
+x-fb-debug: Noipf6venBILEIo0qnzsWbWQL579Tv3SaDH+AqZaSRoe35Zf6NxVZzN6aggDmKN5qQ2lt8Srupj/xiV3r8HTpA==
+date: Fri, 29 Dec 2023 17:59:43 GMT
 alt-svc: h3=":443"; ma=86400
 
 
@@ -50,10 +50,10 @@ perf: 7469935968
 location: https://twitter.com/
 cache-control: no-cache, no-store, max-age=0
 content-length: 0
-x-transaction-id: 638142c6f979c9e0
+x-transaction-id: e56dbf59696ac394
 x-response-time: 117
-x-connection-hash: ae18fc041d14d8f30bba3a9c14f36f76ccb71ccfbbedad0e3c2135ed1a29c556
-date: Fri, 29 Dec 2023 17:40:01 GMT
+x-connection-hash: a27e874aef3921a5bbca4d5c4fc45f9e463125863b5ba5c8e974ce5112fd90df
+date: Fri, 29 Dec 2023 17:59:49 GMT
 server: tsa_d
 
 

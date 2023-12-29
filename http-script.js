@@ -5,7 +5,7 @@ const fs = require('fs');
 const jsonFilePath = 'json/url.json';
 
 // Ensure the results_http directory exists
-const resultsDirectory = 'results_http';
+const resultsDirectory = 'results';
 
 if (!fs.existsSync(resultsDirectory)) {
   fs.mkdirSync(resultsDirectory);
