@@ -1,4 +1,4 @@
-# http-script
+# http-checker-script
 
 A script to check the HTTP protocol used by websites getting the URLs that will be checked from a JSON file.
 
