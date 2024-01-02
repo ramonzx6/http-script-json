@@ -8,6 +8,8 @@ You must have cURL and nghttp-2 installed.
 
 You can install both in Linux using the script in <a href="https://gist.github.com/jjpeleato/3327c2e38fc0fea7d6602401f9849809">this repository!</a>
 
+If you use Windows, you can use it via WSL, which is a native way to use Linux in Windows. I used WSL while I was building and using the script.
+
 ## Use
 
 To use the script, you should open the "url.json" file inside the folder "json" and put the URLs you would like to check.
