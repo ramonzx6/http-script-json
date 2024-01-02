@@ -19,9 +19,3 @@ For example: "www.google.com"
 ## Output
 
 As output, you're gonna receive all the infos about the protocol used for eache URL in the terminal. These infos about the URL received by cURL will be saved in two different files, "http1_results.txt" for the URLs that support HTTP/1 and "http2_results.txt" for the URLs that support HTTP/2, both are going to be in the folder "results"
-
-## Tip
-
-If you just want to check a single URL, I recommend you to use my other script that you put the URL in the command, without JSON file and stuff. 
-
-You can check it <a href="https://github.com/ramonzx6/http-script">here!</a>
