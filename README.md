@@ -20,4 +20,4 @@ For example: "www.google.com"
 
 ## Output
 
-As output, you're gonna receive all the infos about the protocol used for eache URL in the terminal. These infos about the URL received by cURL will be saved in two different files, "http1_results.txt" for the URLs that support HTTP/1 and "http2_results.txt" for the URLs that support HTTP/2, both are going to be in the folder "results"
+As output, you're gonna receive all the infos about the protocol used for each URL in the terminal. These infos about the URL received by cURL will be saved in two different files, "http1_results.txt" for the URLs that support HTTP/1 and "http2_results.txt" for the URLs that support HTTP/2, both are going to be in the folder "results"
