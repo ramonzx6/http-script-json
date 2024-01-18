@@ -8,6 +8,8 @@ You must have cURL and nghttp-2 installed.
 
 You can install both in Linux using the script in <a href="https://gist.github.com/jjpeleato/3327c2e38fc0fea7d6602401f9849809">this repository!</a>
 
+You must have WHOIS package installed, you can do it on linux using the command "sudo apt install whois"
+
 ## Use
 
 To use the script, you should open the "url.json" file inside the folder "json" and put the URLs you would like to check.

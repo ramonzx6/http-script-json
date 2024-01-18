@@ -1,0 +1,9 @@
+DNS: prefeitura.rio
+HTTP/1.1 200 OK
+Date: Thu, 18 Jan 2024 00:38:32 GMT
+Link: <https://prefeitura.rio/wp-json/>; rel="https://api.w.org/", <https://prefeitura.rio/wp-json/wp/v2/pages/18110>; rel="alternate"; type="application/json", <https://prefeitura.rio/>; rel=shortlink
+Content-Type: text/html; charset=UTF-8
+Set-Cookie: TS01c83139=01a427213d3173ed4ded3fbf03ae01bd6acdb51af253aeeaaa0b783ea98d7759c1e0f3b7f1248b824afc8e2339400864c5874004f2; Path=/; Domain=.prefeitura.rio
+Transfer-Encoding: chunked
+
+

@@ -2,15 +2,21 @@ const { exec } = require('child_process');
 const fs = require('fs');
 
 // Read URLs from a JSON file
-const jsonFilePath = 'json/url.json';
+const jsonFilePath = 'json/urls.json';
 
-// Ensure the results_http directory exists
-const resultsDirectory = 'results';
+// Create a constant with the date
+
+const currentDate = new Date();
+const stringDate = currentDate.toString().substring(4,25).replace(/:/g, "-");
+
+// Make sure that results directory exists
+const resultsDirectory = `results ${stringDate}`;
 
 if (!fs.existsSync(resultsDirectory)) {
   fs.mkdirSync(resultsDirectory);
 }
 
+// Read JSON file
 fs.readFile(jsonFilePath, 'utf8', (readErr, data) => {
   if (readErr) {
     console.error('Error reading the JSON file:', readErr);
@@ -68,7 +74,7 @@ fs.readFile(jsonFilePath, 'utf8', (readErr, data) => {
     });
 
     function checkAndSaveResults() {
-      // If all URLs have been processed, save the results to files
+      // If all URLs have been processed, save the results to the files
       if (processedCount === urlArray.length) {
         saveResultsToFile(http1Results, 'http1_results.txt');
         saveResultsToFile(http2Results, 'http2_results.txt');
@@ -81,7 +87,7 @@ fs.readFile(jsonFilePath, 'utf8', (readErr, data) => {
 
 function saveResultsToFile(resultsArray, fileName) {
   // The directory where you want to save the results
-  const whereToSave = `results/${fileName}`;
+  const whereToSave = `${resultsDirectory}/${fileName}`;
 
   // Save the results to a file
   fs.writeFile(whereToSave, resultsArray.join('\n'), (writeErr) => {

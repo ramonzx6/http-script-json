@@ -1,0 +1,37 @@
+DNS: www.cloudflare.com
+HTTP/2 200 
+date: Thu, 18 Jan 2024 00:38:32 GMT
+content-type: text/html; charset=utf-8
+cf-ray: 8472c691fc871d3c-GIG
+cf-cache-status: HIT
+age: 534
+cache-control: max-age=600
+expires: Thu, 18 Jan 2024 00:29:52 GMT
+last-modified: Thu, 18 Jan 2024 00:15:55 GMT
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: Accept-Encoding
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-rm: RDWD
+x-xss-protection: 1; mode=block
+set-cookie: __cf_bm=fdSmMFqWirDZsRGA05ztq7O3N9oJn.sOSsB0YjSmlC0-1705538312-1-AUKH86sK2e12vSZjSI4pF++U7RV2sjpMIWwgEnjDdyBX9Z/s7/rFK9MmXj7dFYPeRz+Wz0nZWooqm/i4dKENVlf5zoYev+053R+7Qw7A3ArZ; path=/; expires=Thu, 18-Jan-24 01:08:32 GMT; domain=.www.cloudflare.com; HttpOnly; Secure; SameSite=None
+report-to: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=uxaRn8otJLprsSwbIuDQdOwhPph4QijJkX92Qq6maYlZ7UmFHSC1dRF8l5a5JXcJ67b1p8ieGwVxOnu35eOG2F4A%2FELCnBPcFb%2FJPD%2BIp0IclfaYr6UnHcoTM9Yxp7SHX01wKg%3D%3D"}],"group":"cf-nel","max_age":604800}
+nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+
+
+DNS: www.twitter.com
+HTTP/2 301 
+perf: 7469935968
+location: https://twitter.com/
+cache-control: no-cache, no-store, max-age=0
+content-length: 0
+x-transaction-id: 81f1375b5b36ec93
+x-response-time: 117
+x-connection-hash: 8d83e694150cb90615422c846026a6c02761f5404ebde62652337674632ead95
+date: Thu, 18 Jan 2024 00:38:32 GMT
+server: tsa_d
+
+
