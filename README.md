@@ -2,6 +2,8 @@
 
 A script to check the HTTP protocol used by websites getting the URLs that will be checked from a JSON file.
 
+This is used to get a lot of URLs and check them to see which ones use HTTP/2 and are vulnerable to Rapid Reset Attack - CVE-2023-44487
+
 ## Enviroment
 
 You must have cURL and nghttp-2 installed.
