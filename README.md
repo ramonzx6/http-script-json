@@ -13,10 +13,36 @@ The scanner is deliberately non-exploitative. It resolves each target, opens a c
 
 HTTP/2 over TLS is advertised using the `h2` ALPN identifier defined by [RFC 9113](https://www.rfc-editor.org/rfc/rfc9113.html#section-3.1). Google recommends verifying or patching every HTTP/2-capable server, proxy, and load balancer in the request path; see its [CVE-2023-44487 guidance](https://cloud.google.com/blog/products/identity-security/google-cloud-mitigated-largest-ddos-attack-peaking-above-398-million-rps/).
 
-## Requirements and build
+## Install a release binary
+
+Go is not required to run the tool. Download the archive for your platform from the [latest GitHub release](https://github.com/ramonzx6/http-script-json/releases/latest):
+
+| Platform | Release asset |
+| --- | --- |
+| Linux x86-64 | `rapid-reset-check_<version>_linux_amd64.tar.gz` |
+| Linux ARM64 | `rapid-reset-check_<version>_linux_arm64.tar.gz` |
+| macOS Intel | `rapid-reset-check_<version>_darwin_amd64.tar.gz` |
+| macOS Apple silicon | `rapid-reset-check_<version>_darwin_arm64.tar.gz` |
+| Windows x86-64 | `rapid-reset-check_<version>_windows_amd64.zip` |
+| Windows ARM64 | `rapid-reset-check_<version>_windows_arm64.zip` |
+
+Extract the archive, then run `rapid-reset-check --version`. On Windows, the executable is named `rapid-reset-check.exe`.
+
+Each release includes `SHA256SUMS`. On Linux, verify a downloaded archive from the same directory with:
+
+```bash
+sha256sum --ignore-missing --check SHA256SUMS
+```
+
+On macOS, compare `shasum -a 256 <archive>` with the matching line in `SHA256SUMS`. Published public-release archives also receive a GitHub artifact attestation, which can be checked with the [GitHub CLI](https://cli.github.com/manual/gh_attestation_verify):
+
+```bash
+gh attestation verify <archive> --repo ramonzx6/http-script-json
+```
+
+## Build from source
 
 - Go 1.22 or newer
-- Authorization to connect to every target you scan
 
 No Node.js, cURL, nghttp2, or WHOIS installation is required.
 
@@ -25,7 +51,11 @@ go test ./...
 go build -o rapid-reset-check ./cmd/rapid-reset-check
 ```
 
+Source builds report `dev` from `--version`; release builds receive their version from the release tag.
+
 ## Quick start
+
+Only scan endpoints you own or are authorized to assess.
 
 Scan one or more public endpoints:
 
@@ -142,3 +172,15 @@ go build ./...
 ```
 
 The test suite uses local TLS fixtures and does not scan public services.
+
+## Automated releases
+
+[Release Please](https://github.com/googleapis/release-please) manages release versions and `vX.Y.Z` tags from Conventional Commit messages. Normal development does not require creating or pushing tags:
+
+1. Commits merged to `main` cause Release Please to open or update a release PR containing the version and changelog changes.
+2. Merging that release PR creates the version tag and a draft GitHub release.
+3. The same workflow tests the tagged source, cross-compiles all six archives, creates checksums and provenance, uploads the assets, and publishes the draft.
+
+Use `fix:` for patch changes, `feat:` for minor changes, and a breaking-change marker (`!`) or `BREAKING CHANGE:` footer for major changes. Maintainers must enable **Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and approve pull requests** once for Release Please to manage its PR.
+
+If asset publication fails after Release Please creates a tag, the release remains a draft. Re-run the **Release** workflow manually with that existing `vX.Y.Z` tag after fixing the failure. Do not create or push a replacement tag.

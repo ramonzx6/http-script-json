@@ -14,7 +14,9 @@ import (
 	"github.com/ramonzx6/http-script-json/internal/scanner"
 )
 
-const version = "0.1.0"
+// version is overridden for release builds with -ldflags. Keep the default
+// useful for local builds where no release tag is available.
+var version = "dev"
 
 // Main runs the command and returns a process exit code. Keeping I/O
 // injectable makes the command straightforward to test without network calls.

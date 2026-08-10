@@ -1,0 +1,164 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing vX.Y.Z tag to rebuild and publish
+        required: true
+        type: string
+
+# Job permissions are declared below. The default is deny-all so a new job
+# cannot accidentally inherit release or token permissions.
+permissions: {}
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Create release PR or release
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    name: Build and publish release assets
+    needs: release
+    if: >-
+      ${{
+        always() &&
+        (
+          (github.event_name == 'push' && needs.release.result == 'success' && needs.release.outputs.release_created == 'true') ||
+          (github.event_name == 'workflow_dispatch' && inputs.tag != '')
+        )
+      }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Validate release outputs
+        shell: bash
+        env:
+          RELEASE_OUTPUT_TAG: ${{ needs.release.outputs.tag_name }}
+          MANUAL_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          release_tag="$RELEASE_OUTPUT_TAG"
+          if [[ -n "$MANUAL_TAG" ]]; then
+            release_tag="$MANUAL_TAG"
+          fi
+          [[ "$release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          release_version="${release_tag#v}"
+          echo "RELEASE_TAG=$release_tag" >> "$GITHUB_ENV"
+          echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
+
+      - name: Check out released source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ inputs.tag || needs.release.outputs.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify release tag commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")" = "$(git rev-parse HEAD)"
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Test and vet released source
+        run: |
+          go test ./...
+          go test -race ./...
+          go vet ./...
+
+      - name: Build release archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          mkdir -p dist
+          ldflags="-s -w -X github.com/ramonzx6/http-script-json/internal/cli.version=${RELEASE_VERSION}"
+
+          native_binary="$(mktemp)"
+          trap 'rm -f "$native_binary"' EXIT
+          CGO_ENABLED=0 go build -trimpath -ldflags "$ldflags" \
+            -o "$native_binary" ./cmd/rapid-reset-check
+          test "$("$native_binary" --version)" = "rapid-reset-check ${RELEASE_VERSION}"
+
+          for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+            IFS=/ read -r goos goarch <<< "$target"
+            package_dir="dist/${goos}_${goarch}"
+            mkdir -p "$package_dir"
+            binary_name="rapid-reset-check"
+            if [[ "$goos" == windows ]]; then
+              binary_name+=".exe"
+            fi
+
+            CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
+              go build -trimpath -ldflags "$ldflags" \
+              -o "$package_dir/$binary_name" ./cmd/rapid-reset-check
+            touch -d '@0' "$package_dir/$binary_name"
+
+            archive_base="rapid-reset-check_${RELEASE_VERSION}_${goos}_${goarch}"
+            if [[ "$goos" == windows ]]; then
+              (cd "$package_dir" && zip -X -q "../${archive_base}.zip" "$binary_name")
+            else
+              tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
+                -C "$package_dir" -czf "dist/${archive_base}.tar.gz" "$binary_name"
+            fi
+            rm -rf "$package_dir"
+          done
+
+          (cd dist && sha256sum *.tar.gz *.zip > SHA256SUMS)
+          test "$(find dist -maxdepth 1 -type f \( -name '*.tar.gz' -o -name '*.zip' \) | wc -l)" -eq 6
+          test "$(wc -l < dist/SHA256SUMS)" -eq 6
+
+      - name: Verify release exists and matches the tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(gh release view "$RELEASE_TAG" --json tagName --jq .tagName)" = "$RELEASE_TAG"
+          test "$(gh release view "$RELEASE_TAG" --json isPrerelease --jq .isPrerelease)" = "false"
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = "true"
+
+      - name: Attest release assets
+        if: ${{ github.event.repository.visibility == 'public' }}
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-checksums: dist/SHA256SUMS
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_TAG" dist/*.tar.gz dist/*.zip dist/SHA256SUMS --clobber
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$RELEASE_TAG" --draft=false

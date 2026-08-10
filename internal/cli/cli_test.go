@@ -13,7 +13,7 @@ func TestVersion(t *testing.T) {
 	if code := Main([]string{"--version"}, &stdout, &stderr, strings.NewReader("")); code != 0 {
 		t.Fatalf("Main() code = %d, stderr = %q", code, stderr.String())
 	}
-	if got := stdout.String(); got != "rapid-reset-check 0.1.0\n" {
+	if got := stdout.String(); got != "rapid-reset-check dev\n" {
 		t.Fatalf("version output = %q", got)
 	}
 }
