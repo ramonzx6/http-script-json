@@ -2,11 +2,18 @@ package cli
 
 import (
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 
 	"github.com/ramonzx6/http-script-json/internal/scanner"
 )
+
+type failingWriter struct{}
+
+func (failingWriter) Write([]byte) (int, error) {
+	return 0, errors.New("output write failed")
+}
 
 func TestVersion(t *testing.T) {
 	var stdout, stderr bytes.Buffer
@@ -55,6 +62,14 @@ func TestPolicySkipReturnsIncompleteExitCode(t *testing.T) {
 	code := Main([]string{"127.0.0.1"}, &stdout, &stderr, strings.NewReader(""))
 	if code != 1 || !strings.Contains(stdout.String(), "not_scanned_policy") {
 		t.Fatalf("Main() code = %d, stdout = %q, stderr = %q", code, stdout.String(), stderr.String())
+	}
+}
+
+func TestTextReportWriteFailureReturnsError(t *testing.T) {
+	var stderr bytes.Buffer
+	code := Main([]string{"127.0.0.1"}, failingWriter{}, &stderr, strings.NewReader(""))
+	if code != 1 || !strings.Contains(stderr.String(), "output write failed") {
+		t.Fatalf("Main() code = %d, stderr = %q", code, stderr.String())
 	}
 }
 

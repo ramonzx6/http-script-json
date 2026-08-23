@@ -113,7 +113,10 @@ func Main(args []string, stdout, stderr io.Writer, stdin io.Reader) int {
 			return 1
 		}
 	} else {
-		writeText(stdout, results)
+		if err := writeText(stdout, results); err != nil {
+			fmt.Fprintln(stderr, err)
+			return 1
+		}
 	}
 	for _, result := range results {
 		if !result.Complete {
@@ -142,31 +145,46 @@ func writeJSON(out io.Writer, report scanner.Report) error {
 	return encoder.Encode(report)
 }
 
-func writeText(out io.Writer, results []scanner.Result) {
-	fmt.Fprintln(out, "rapid-reset-check: active-but-minimal TLS ALPN scan")
+func writeText(out io.Writer, results []scanner.Result) error {
+	if _, err := fmt.Fprintln(out, "rapid-reset-check: active-but-minimal TLS ALPN scan"); err != nil {
+		return err
+	}
 	for _, result := range results {
 		protocol := result.Protocol
 		if protocol == "" {
 			protocol = "-"
 		}
-		fmt.Fprintf(out, "%s\t%s\tcomplete=%t\tprotocol=%s\taddresses=%d/%d\tomitted=%d\tduration=%dms\n", result.Target, result.Classification, result.Complete, protocol, len(result.Addresses), result.ResolvedAddressCount, result.OmittedAddressCount, result.DurationMillis)
-		fmt.Fprintf(out, "  %s\n", result.ClassificationReason)
+		if _, err := fmt.Fprintf(out, "%s\t%s\tcomplete=%t\tprotocol=%s\taddresses=%d/%d\tomitted=%d\tduration=%dms\n", result.Target, result.Classification, result.Complete, protocol, len(result.Addresses), result.ResolvedAddressCount, result.OmittedAddressCount, result.DurationMillis); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprintf(out, "  %s\n", result.ClassificationReason); err != nil {
+			return err
+		}
 		for _, address := range result.Addresses {
 			switch {
 			case address.PolicyBlocked:
-				fmt.Fprintf(out, "  address=%s policy=blocked\n", address.Address)
+				if _, err := fmt.Fprintf(out, "  address=%s policy=blocked\n", address.Address); err != nil {
+					return err
+				}
 			case address.Error != "":
-				fmt.Fprintf(out, "  address=%s error=%s\n", address.Address, address.Error)
+				if _, err := fmt.Fprintf(out, "  address=%s error=%s\n", address.Address, address.Error); err != nil {
+					return err
+				}
 			default:
-				fmt.Fprintf(out, "  address=%s alpn=%s tls=%s\n", address.Address, address.TLS.NegotiatedProtocol, address.TLS.Version)
+				if _, err := fmt.Fprintf(out, "  address=%s alpn=%s tls=%s\n", address.Address, address.TLS.NegotiatedProtocol, address.TLS.Version); err != nil {
+					return err
+				}
 			}
 		}
 		if result.Error != "" {
-			fmt.Fprintf(out, "  error=%s\n", result.Error)
+			if _, err := fmt.Fprintf(out, "  error=%s\n", result.Error); err != nil {
+				return err
+			}
 		}
 	}
 	summary := scanner.Summarize(results)
-	fmt.Fprintf(out, "summary: total=%d complete=%d incomplete=%d h2_observed=%d h2_not_observed=%d indeterminate=%d policy=%d invalid=%d\n", summary.Total, summary.Complete, summary.Incomplete, summary.H2ObservedReview, summary.H2NotObserved, summary.Indeterminate, summary.NotScannedPolicy, summary.InvalidTarget)
+	_, err := fmt.Fprintf(out, "summary: total=%d complete=%d incomplete=%d h2_observed=%d h2_not_observed=%d indeterminate=%d policy=%d invalid=%d\n", summary.Total, summary.Complete, summary.Incomplete, summary.H2ObservedReview, summary.H2NotObserved, summary.Indeterminate, summary.NotScannedPolicy, summary.InvalidTarget)
+	return err
 }
 
 // Run is convenient for the conventional os.Args-based main function.
