@@ -1,9 +1,6 @@
-// Package scanner provides an active-but-minimal TLS ALPN probe for HTTP/2 exposure.
-//
-// A probe performs a TLS handshake only. It does not send an HTTP request,
-// HTTP/2 preface, stream, reset, flood, or any other application bytes. Seeing
-// h2 in ALPN establishes protocol exposure on the tested path, not whether the
-// implementation is vulnerable to CVE-2023-44487.
+// Package scanner probes HTTP/2 exposure with a TLS ALPN handshake only. It
+// sends no application data; h2 indicates protocol exposure, not vulnerability
+// or patch status.
 package scanner
 
 import "time"
@@ -11,8 +8,8 @@ import "time"
 // MaxTargets bounds allocations and network work from positional or JSON input.
 const MaxTargets = 4096
 
-// Classification is intentionally conservative. The scanner cannot establish
-// a server's patch status from a handshake, so h2 always requires review.
+// Classification is conservative: h2 always requires review because a
+// handshake cannot establish a server's patch status.
 type Classification string
 
 const (
@@ -38,7 +35,6 @@ var DefaultOptions = Options{
 	MaxAddresses: 8,
 }
 
-// TLSInfo contains non-secret TLS handshake details.
 type TLSInfo struct {
 	Verified           bool   `json:"verified"`
 	Version            string `json:"version,omitempty"`
@@ -47,7 +43,6 @@ type TLSInfo struct {
 	ServerName         string `json:"server_name,omitempty"`
 }
 
-// CertificateInfo contains bounded certificate identity and validity details.
 type CertificateInfo struct {
 	Subject   string   `json:"subject,omitempty"`
 	Issuer    string   `json:"issuer,omitempty"`
@@ -57,7 +52,6 @@ type CertificateInfo struct {
 	SHA256    string   `json:"sha256,omitempty"`
 }
 
-// AddressResult records one resolved address attempt.
 type AddressResult struct {
 	Address          string          `json:"address"`
 	PolicyBlocked    bool            `json:"policy_blocked"`
@@ -68,8 +62,8 @@ type AddressResult struct {
 	Error            string          `json:"error,omitempty"`
 }
 
-// Result is one target's active-but-minimal observation. HTTP response fields are absent
-// by design: an ALPN-only probe never sends an HTTP request or receives one.
+// Result is one target's ALPN observation. It has no HTTP response fields
+// because the probe never sends an HTTP request.
 type Result struct {
 	Target               string          `json:"target"`
 	ObservedAt           string          `json:"observed_at"`

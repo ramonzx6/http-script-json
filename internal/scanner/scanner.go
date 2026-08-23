@@ -24,8 +24,7 @@ const (
 	maxAddresses        = 64
 )
 
-// Scanner performs active-but-minimal TLS ALPN handshakes. It never writes application
-// bytes to a connection.
+// Scanner performs TLS ALPN handshakes without writing application data.
 type Scanner struct {
 	options  Options
 	resolver resolver
@@ -36,14 +35,7 @@ type resolver interface {
 	LookupIPAddr(context.Context, string) ([]net.IPAddr, error)
 }
 
-type defaultResolver struct{}
-
-func (defaultResolver) LookupIPAddr(ctx context.Context, host string) ([]net.IPAddr, error) {
-	return net.DefaultResolver.LookupIPAddr(ctx, host)
-}
-
-// New validates options and creates a scanner with certificate verification
-// enabled. A custom CA file can extend the system trust roots.
+// New creates a certificate-verifying scanner. CAFile extends the system roots.
 func New(options Options) (*Scanner, error) {
 	if options.Concurrency < 0 {
 		return nil, fmt.Errorf("concurrency must be positive")
@@ -73,18 +65,10 @@ func New(options Options) (*Scanner, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Scanner{options: options, resolver: defaultResolver{}, rootCAs: rootCAs}, nil
+	return &Scanner{options: options, resolver: net.DefaultResolver, rootCAs: rootCAs}, nil
 }
 
-// Options returns the validated options used by the scanner.
-func (s *Scanner) Options() Options {
-	if s == nil {
-		return Options{}
-	}
-	return s.options
-}
-
-// Scan scans targets with bounded worker concurrency and preserves input order.
+// Scan probes targets with bounded concurrency and preserves input order.
 func (s *Scanner) Scan(ctx context.Context, targets []string) []Result {
 	if ctx == nil {
 		ctx = context.Background()
@@ -106,7 +90,7 @@ func (s *Scanner) Scan(ctx context.Context, targets []string) []Result {
 	}
 	if err := ctx.Err(); err != nil {
 		for index := range targets {
-			results[index] = canceledResult(targets[index], err)
+			results[index] = canceledResult(err)
 		}
 		return results
 	}
@@ -132,7 +116,7 @@ func (s *Scanner) Scan(ctx context.Context, targets []string) []Result {
 		select {
 		case jobs <- index:
 		case <-ctx.Done():
-			results[index] = canceledResult(targets[index], ctx.Err())
+			results[index] = canceledResult(ctx.Err())
 		}
 	}
 	close(jobs)
@@ -205,9 +189,6 @@ func (s *Scanner) scanOne(parent context.Context, rawTarget string) (result Resu
 		addressResult := s.probeAddress(addressContext, u, address)
 		addressCancel()
 		result.Addresses = append(result.Addresses, addressResult)
-		if addressResult.TLS.NegotiatedProtocol == "h2" {
-			result.HTTP2Negotiated = true
-		}
 	}
 	result = finalizeResult(result)
 	return result
@@ -283,8 +264,7 @@ func (s *Scanner) probeAddress(ctx context.Context, target *url.URL, address net
 	if len(state.PeerCertificates) > 0 {
 		result.Certificate = certificateInfo(state.PeerCertificates[0])
 	}
-	// Deliberately do not call Read or Write after HandshakeContext. TLS
-	// handshake bytes are not application protocol bytes.
+	// Do not read or write after the handshake: this probe sends no application data.
 	return result
 }
 
@@ -294,33 +274,31 @@ func finalizeResult(result Result) Result {
 	blocked := 0
 	var firstProtocol AddressResult
 	var h2Protocol AddressResult
-	gotProtocol := false
-	gotH2Protocol := false
+	result.HTTP2Negotiated = false
 	for _, address := range result.Addresses {
-		switch {
-		case address.PolicyBlocked:
+		if address.PolicyBlocked {
 			blocked++
-		case address.Error != "":
+			continue
+		}
+		if address.Error != "" {
 			failures++
-		default:
-			successes++
-			if address.TLS.NegotiatedProtocol == "h2" && !gotH2Protocol {
-				h2Protocol = address
-				gotH2Protocol = true
-			}
-			if !gotProtocol {
-				firstProtocol = address
-				gotProtocol = true
-			}
+			continue
+		}
+		successes++
+		if successes == 1 {
+			firstProtocol = address
+		}
+		if address.TLS.NegotiatedProtocol == "h2" && !result.HTTP2Negotiated {
+			result.HTTP2Negotiated = true
+			h2Protocol = address
 		}
 	}
-	result.Complete = successes > 0 && failures == 0 && blocked == 0 && !result.AddressLimitReached
+	incomplete := failures > 0 || blocked > 0 || result.AddressLimitReached
+	result.Complete = successes > 0 && !incomplete
 	if result.HTTP2Negotiated {
 		result.Protocol = "h2"
-		if gotH2Protocol {
-			result.TLS = h2Protocol.TLS
-		}
-	} else if gotProtocol {
+		result.TLS = h2Protocol.TLS
+	} else if successes > 0 {
 		result.Protocol = firstProtocol.TLS.NegotiatedProtocol
 		result.TLS = firstProtocol.TLS
 	}
@@ -328,7 +306,7 @@ func finalizeResult(result Result) Result {
 		result.Classification = ClassificationH2Observed
 		result.ClassificationReason = "ALPN negotiated h2 on at least one tested address; this does not establish CVE-2023-44487 vulnerability or patch status"
 		result.Evidence = []string{"ALPN negotiated h2", "no HTTP request or HTTP/2 stream was sent"}
-		if blocked > 0 || failures > 0 || result.AddressLimitReached {
+		if incomplete {
 			result.Evidence = append(result.Evidence, "some resolved addresses were not fully observed")
 		}
 		return result
@@ -339,7 +317,7 @@ func finalizeResult(result Result) Result {
 		result.Evidence = []string{"use --allow-private only when scanning a deliberately controlled private target"}
 		return result
 	}
-	if successes == 0 || failures > 0 || blocked > 0 || result.AddressLimitReached {
+	if successes == 0 || incomplete {
 		result.Classification = ClassificationIndeterminate
 		result.ClassificationReason = "the tested addresses did not provide a complete successful ALPN observation"
 		if result.AddressLimitReached {
@@ -353,7 +331,7 @@ func finalizeResult(result Result) Result {
 	return result
 }
 
-func canceledResult(target string, err error) Result {
+func canceledResult(err error) Result {
 	return Result{
 		Target:               "<unscanned-target>",
 		ObservedAt:           time.Now().UTC().Format(time.RFC3339Nano),
@@ -396,11 +374,11 @@ func certificateInfo(certificate *x509.Certificate) CertificateInfo {
 		NotAfter:  certificate.NotAfter.UTC().Format(time.RFC3339),
 		SHA256:    hex.EncodeToString(fingerprint[:]),
 	}
-	if len(certificate.DNSNames) > maxCertificateNames {
-		info.DNSNames = append([]string(nil), certificate.DNSNames[:maxCertificateNames]...)
-	} else {
-		info.DNSNames = append([]string(nil), certificate.DNSNames...)
+	dnsNames := certificate.DNSNames
+	if len(dnsNames) > maxCertificateNames {
+		dnsNames = dnsNames[:maxCertificateNames]
 	}
+	info.DNSNames = append([]string(nil), dnsNames...)
 	return info
 }
 
@@ -437,8 +415,8 @@ func boundedError(err error) string {
 	return message
 }
 
-// blockedAddress rejects non-unicast and private/reserved addresses by
-// default. --allow-private is an explicit opt-in for controlled local tests.
+// blockedAddress rejects non-unicast and private/reserved addresses unless
+// private-address scanning is explicitly enabled.
 func blockedAddress(ip net.IP, allowPrivate bool) bool {
 	if ip == nil || ip.IsMulticast() || ip.IsUnspecified() {
 		return true
@@ -449,7 +427,7 @@ func blockedAddress(ip net.IP, allowPrivate bool) bool {
 	if !ip.IsGlobalUnicast() {
 		return true
 	}
-	if ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+	if ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() {
 		return true
 	}
 	return reservedAddress(ip)

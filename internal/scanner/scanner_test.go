@@ -269,7 +269,6 @@ func TestBlockedAddress(t *testing.T) {
 
 func TestPartialH2ObservationIsIncomplete(t *testing.T) {
 	result := finalizeResult(Result{
-		HTTP2Negotiated: true,
 		Addresses: []AddressResult{
 			{Address: "203.0.113.1", TLS: TLSInfo{Verified: true, NegotiatedProtocol: "h2"}},
 			{Address: "203.0.113.2", Error: "connect failed"},
@@ -285,7 +284,6 @@ func TestPartialH2ObservationIsIncomplete(t *testing.T) {
 
 func TestTruncatedH2ObservationIsIncomplete(t *testing.T) {
 	result := finalizeResult(Result{
-		HTTP2Negotiated:     true,
 		AddressLimitReached: true,
 		Addresses: []AddressResult{
 			{Address: "203.0.113.1", TLS: TLSInfo{Verified: true, NegotiatedProtocol: "h2"}},

@@ -10,8 +10,8 @@ import (
 
 const maxInputBytes = 4 << 20
 
-// DecodeTargets supports the legacy JSON array and object forms containing
-// urls or targets.
+// DecodeTargets accepts a JSON array or an object containing urls or targets.
+// Input is limited to 4 MiB.
 func DecodeTargets(r io.Reader) ([]string, error) {
 	if r == nil {
 		return nil, fmt.Errorf("nil JSON reader")

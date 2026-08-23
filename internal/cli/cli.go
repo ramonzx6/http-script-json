@@ -14,12 +14,9 @@ import (
 	"github.com/ramonzx6/http-script-json/internal/scanner"
 )
 
-// version is overridden for release builds with -ldflags. Keep the default
-// useful for local builds where no release tag is available.
+// version is set by release builds with -ldflags.
 var version = "dev"
 
-// Main runs the command and returns a process exit code. Keeping I/O
-// injectable makes the command straightforward to test without network calls.
 func Main(args []string, stdout, stderr io.Writer, stdin io.Reader) int {
 	flags := flag.NewFlagSet("rapid-reset-check", flag.ContinueOnError)
 	flags.SetOutput(stderr)
@@ -71,7 +68,7 @@ func Main(args []string, stdout, stderr io.Writer, stdin io.Reader) int {
 		return 2
 	}
 
-	targets := append([]string(nil), flags.Args()...)
+	targets := flags.Args()
 	if inputPath != "" && len(targets) > 0 {
 		fmt.Fprintln(stderr, "--input and positional targets are mutually exclusive")
 		return 2
@@ -107,16 +104,15 @@ func Main(args []string, stdout, stderr io.Writer, stdin io.Reader) int {
 		return 2
 	}
 	results := probe.Scan(context.Background(), targets)
+	var outputErr error
 	if outputFormat == "json" {
-		if err := writeJSON(stdout, scanner.NewReport(results)); err != nil {
-			fmt.Fprintln(stderr, err)
-			return 1
-		}
+		outputErr = writeJSON(stdout, scanner.NewReport(results))
 	} else {
-		if err := writeText(stdout, results); err != nil {
-			fmt.Fprintln(stderr, err)
-			return 1
-		}
+		outputErr = writeText(stdout, results)
+	}
+	if outputErr != nil {
+		fmt.Fprintln(stderr, outputErr)
+		return 1
 	}
 	for _, result := range results {
 		if !result.Complete {
@@ -146,46 +142,38 @@ func writeJSON(out io.Writer, report scanner.Report) error {
 }
 
 func writeText(out io.Writer, results []scanner.Result) error {
-	if _, err := fmt.Fprintln(out, "rapid-reset-check: active-but-minimal TLS ALPN scan"); err != nil {
-		return err
+	var writeErr error
+	write := func(format string, args ...any) {
+		if writeErr == nil {
+			_, writeErr = fmt.Fprintf(out, format, args...)
+		}
 	}
+
+	write("rapid-reset-check: active-but-minimal TLS ALPN scan\n")
 	for _, result := range results {
 		protocol := result.Protocol
 		if protocol == "" {
 			protocol = "-"
 		}
-		if _, err := fmt.Fprintf(out, "%s\t%s\tcomplete=%t\tprotocol=%s\taddresses=%d/%d\tomitted=%d\tduration=%dms\n", result.Target, result.Classification, result.Complete, protocol, len(result.Addresses), result.ResolvedAddressCount, result.OmittedAddressCount, result.DurationMillis); err != nil {
-			return err
-		}
-		if _, err := fmt.Fprintf(out, "  %s\n", result.ClassificationReason); err != nil {
-			return err
-		}
+		write("%s\t%s\tcomplete=%t\tprotocol=%s\taddresses=%d/%d\tomitted=%d\tduration=%dms\n", result.Target, result.Classification, result.Complete, protocol, len(result.Addresses), result.ResolvedAddressCount, result.OmittedAddressCount, result.DurationMillis)
+		write("  %s\n", result.ClassificationReason)
 		for _, address := range result.Addresses {
 			switch {
 			case address.PolicyBlocked:
-				if _, err := fmt.Fprintf(out, "  address=%s policy=blocked\n", address.Address); err != nil {
-					return err
-				}
+				write("  address=%s policy=blocked\n", address.Address)
 			case address.Error != "":
-				if _, err := fmt.Fprintf(out, "  address=%s error=%s\n", address.Address, address.Error); err != nil {
-					return err
-				}
+				write("  address=%s error=%s\n", address.Address, address.Error)
 			default:
-				if _, err := fmt.Fprintf(out, "  address=%s alpn=%s tls=%s\n", address.Address, address.TLS.NegotiatedProtocol, address.TLS.Version); err != nil {
-					return err
-				}
+				write("  address=%s alpn=%s tls=%s\n", address.Address, address.TLS.NegotiatedProtocol, address.TLS.Version)
 			}
 		}
 		if result.Error != "" {
-			if _, err := fmt.Fprintf(out, "  error=%s\n", result.Error); err != nil {
-				return err
-			}
+			write("  error=%s\n", result.Error)
 		}
 	}
 	summary := scanner.Summarize(results)
-	_, err := fmt.Fprintf(out, "summary: total=%d complete=%d incomplete=%d h2_observed=%d h2_not_observed=%d indeterminate=%d policy=%d invalid=%d\n", summary.Total, summary.Complete, summary.Incomplete, summary.H2ObservedReview, summary.H2NotObserved, summary.Indeterminate, summary.NotScannedPolicy, summary.InvalidTarget)
-	return err
+	write("summary: total=%d complete=%d incomplete=%d h2_observed=%d h2_not_observed=%d indeterminate=%d policy=%d invalid=%d\n", summary.Total, summary.Complete, summary.Incomplete, summary.H2ObservedReview, summary.H2NotObserved, summary.Indeterminate, summary.NotScannedPolicy, summary.InvalidTarget)
+	return writeErr
 }
 
-// Run is convenient for the conventional os.Args-based main function.
 func Run() int { return Main(os.Args[1:], os.Stdout, os.Stderr, os.Stdin) }

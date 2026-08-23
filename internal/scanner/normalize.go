@@ -9,9 +9,8 @@ import (
 	"unicode"
 )
 
-// NormalizeTarget accepts an HTTPS URL or hostname. Bare hostnames use HTTPS.
-// ALPN is an authority-level property, so paths, queries, and fragments are
-// rejected instead of being silently ignored.
+// NormalizeTarget accepts HTTPS authorities. Bare hostnames use HTTPS; paths,
+// queries, and fragments are rejected because ALPN is authority-scoped.
 func NormalizeTarget(raw string) (string, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
@@ -84,9 +83,8 @@ func NormalizeTarget(raw string) (string, error) {
 	return u.String(), nil
 }
 
-// splitIPv6Zone separates an IPv6 literal from its optional scoped-address
-// zone. The URL parser has already decoded RFC 6874's %25 separator by the
-// time this helper receives the hostname.
+// splitIPv6Zone separates an IPv6 literal from its optional zone. URL parsing
+// has already decoded RFC 6874's %25 separator here.
 func splitIPv6Zone(hostname string) (ipLiteral, zone string, err error) {
 	ipLiteral, zone, hasZone := strings.Cut(hostname, "%")
 	if !hasZone {
