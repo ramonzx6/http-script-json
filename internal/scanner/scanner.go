@@ -215,8 +215,12 @@ func (s *Scanner) scanOne(parent context.Context, rawTarget string) (result Resu
 
 func (s *Scanner) resolve(ctx context.Context, target *url.URL) ([]net.IPAddr, int, error) {
 	host := target.Hostname()
-	if ip := net.ParseIP(host); ip != nil {
-		return []net.IPAddr{{IP: ip}}, 1, nil
+	ipLiteral, zone, zoneErr := splitIPv6Zone(host)
+	if zoneErr != nil {
+		return nil, 0, fmt.Errorf("invalid target host: %w", zoneErr)
+	}
+	if ip := net.ParseIP(ipLiteral); ip != nil {
+		return []net.IPAddr{{IP: ip, Zone: zone}}, 1, nil
 	}
 	addresses, err := s.resolver.LookupIPAddr(ctx, host)
 	if err != nil {
@@ -261,7 +265,7 @@ func (s *Scanner) probeAddress(ctx context.Context, target *url.URL, address net
 	}
 	defer connection.Close()
 
-	serverName := target.Hostname()
+	serverName, _, _ := splitIPv6Zone(target.Hostname())
 	config := &tls.Config{
 		ServerName: serverName,
 		RootCAs:    s.rootCAs,

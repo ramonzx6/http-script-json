@@ -40,12 +40,17 @@ func NormalizeTarget(raw string) (string, error) {
 	if u.User != nil || strings.ContainsAny(u.Host, "@\r\n\t ") {
 		return "", fmt.Errorf("target must not include credentials or invalid host characters")
 	}
-	hostname := strings.TrimSuffix(strings.ToLower(u.Hostname()), ".")
+	rawHostname := u.Hostname()
+	hostname := strings.TrimSuffix(strings.ToLower(rawHostname), ".")
 	if hostname == "" {
 		return "", fmt.Errorf("target has an empty hostname")
 	}
 	if strings.HasSuffix(u.Host, ":") {
 		return "", fmt.Errorf("target contains an invalid port")
+	}
+	ipLiteral, zone, zoneErr := splitIPv6Zone(rawHostname)
+	if zoneErr != nil {
+		return "", fmt.Errorf("target contains an invalid IPv6 zone")
 	}
 	port := u.Port()
 	if port != "" {
@@ -55,8 +60,12 @@ func NormalizeTarget(raw string) (string, error) {
 		}
 	}
 	if strings.Contains(hostname, ":") {
-		if net.ParseIP(hostname) == nil {
+		if net.ParseIP(ipLiteral) == nil {
 			return "", fmt.Errorf("target contains an invalid IPv6 hostname")
+		}
+		hostname = strings.ToLower(ipLiteral)
+		if zone != "" {
+			hostname += "%" + zone
 		}
 		if port != "" && port != "443" {
 			u.Host = net.JoinHostPort(hostname, port)
@@ -73,6 +82,20 @@ func NormalizeTarget(raw string) (string, error) {
 	}
 	u.Path = "/"
 	return u.String(), nil
+}
+
+// splitIPv6Zone separates an IPv6 literal from its optional scoped-address
+// zone. The URL parser has already decoded RFC 6874's %25 separator by the
+// time this helper receives the hostname.
+func splitIPv6Zone(hostname string) (ipLiteral, zone string, err error) {
+	ipLiteral, zone, hasZone := strings.Cut(hostname, "%")
+	if !hasZone {
+		return hostname, "", nil
+	}
+	if zone == "" || strings.Contains(zone, "%") || !strings.Contains(ipLiteral, ":") {
+		return "", "", fmt.Errorf("invalid IPv6 zone syntax")
+	}
+	return ipLiteral, zone, nil
 }
 
 func hasScheme(value string) bool {

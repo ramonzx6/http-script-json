@@ -26,6 +26,7 @@ func TestNormalizeTarget(t *testing.T) {
 		{"trailing dot", "https://Example.COM./", "https://example.com/"},
 		{"default port", "Example.COM:443", "https://example.com/"},
 		{"ipv6", "https://[::1]:443", "https://[::1]/"},
+		{"scoped ipv6", "https://[fe80::1%25Eth0]", "https://[fe80::1%25Eth0]/"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -38,10 +39,37 @@ func TestNormalizeTarget(t *testing.T) {
 			}
 		})
 	}
-	for _, input := range []string{"", "https://", "ftp://example.com", "http://example.com", "https://user:pass@example.com", "example.com:", "https://[::1]:", "https://example.com:0", "https://example.com/path", "https://example.com?query", "example.com bad"} {
+	for _, input := range []string{"", "https://", "ftp://example.com", "http://example.com", "https://user:pass@example.com", "example.com:", "https://[::1]:", "https://example.com:0", "https://[fe80::1%25]", "https://[fe80::1%25Eth0%2525bad]", "https://example.com/path", "https://example.com?query", "example.com bad"} {
 		if _, err := NormalizeTarget(input); err == nil {
 			t.Errorf("NormalizeTarget(%q) unexpectedly succeeded", input)
 		}
+	}
+}
+
+func TestScopedIPv6ResolutionPreservesZoneAndStripsItFromTLSName(t *testing.T) {
+	probe, err := New(Options{AllowPrivate: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, err := url.Parse("https://[fe80::1%25Eth0]/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	addresses, count, err := probe.resolve(context.Background(), target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 || len(addresses) != 1 {
+		t.Fatalf("resolve() returned %d addresses (count %d), want one", len(addresses), count)
+	}
+	if addresses[0].Zone != "Eth0" {
+		t.Fatalf("resolved zone = %q, want %q", addresses[0].Zone, "Eth0")
+	}
+	if got := addresses[0].String(); got != "fe80::1%Eth0" {
+		t.Fatalf("resolved address = %q, want %q", got, "fe80::1%Eth0")
+	}
+	if got, _, _ := splitIPv6Zone(target.Hostname()); got != "fe80::1" {
+		t.Fatalf("TLS server name host = %q, want %q", got, "fe80::1")
 	}
 }
 
