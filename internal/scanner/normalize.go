@@ -44,6 +44,9 @@ func NormalizeTarget(raw string) (string, error) {
 	if hostname == "" {
 		return "", fmt.Errorf("target has an empty hostname")
 	}
+	if strings.HasSuffix(u.Host, ":") {
+		return "", fmt.Errorf("target contains an invalid port")
+	}
 	port := u.Port()
 	if port != "" {
 		portNumber, portErr := strconv.Atoi(port)

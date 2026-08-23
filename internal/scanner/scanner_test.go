@@ -38,7 +38,7 @@ func TestNormalizeTarget(t *testing.T) {
 			}
 		})
 	}
-	for _, input := range []string{"", "https://", "ftp://example.com", "http://example.com", "https://user:pass@example.com", "https://example.com:0", "https://example.com/path", "https://example.com?query", "example.com bad"} {
+	for _, input := range []string{"", "https://", "ftp://example.com", "http://example.com", "https://user:pass@example.com", "example.com:", "https://[::1]:", "https://example.com:0", "https://example.com/path", "https://example.com?query", "example.com bad"} {
 		if _, err := NormalizeTarget(input); err == nil {
 			t.Errorf("NormalizeTarget(%q) unexpectedly succeeded", input)
 		}
