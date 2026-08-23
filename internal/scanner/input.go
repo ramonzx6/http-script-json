@@ -1,11 +1,14 @@
 package scanner
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 )
+
+const maxInputBytes = 4 << 20
 
 // DecodeTargets supports the legacy JSON array and object forms containing
 // urls or targets.
@@ -13,7 +16,14 @@ func DecodeTargets(r io.Reader) ([]string, error) {
 	if r == nil {
 		return nil, fmt.Errorf("nil JSON reader")
 	}
-	decoder := json.NewDecoder(io.LimitReader(r, 4<<20))
+	input, err := io.ReadAll(io.LimitReader(r, maxInputBytes+1))
+	if err != nil {
+		return nil, fmt.Errorf("read targets JSON: %w", err)
+	}
+	if len(input) > maxInputBytes {
+		return nil, fmt.Errorf("targets JSON exceeds the input limit of %d bytes", maxInputBytes)
+	}
+	decoder := json.NewDecoder(bytes.NewReader(input))
 	var payload json.RawMessage
 	if err := decoder.Decode(&payload); err != nil {
 		return nil, fmt.Errorf("decode targets JSON: %w", err)
