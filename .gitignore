@@ -1,0 +1,5 @@
+/rapid-reset-check
+/bin/
+/reports/
+*.out
+coverage.txt
